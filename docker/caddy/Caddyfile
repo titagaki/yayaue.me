@@ -1,0 +1,22 @@
+http://{$SITE_DOMAIN} {
+    @indextxt path {$YP_PATH}/index.txt
+    handle @indextxt {
+        reverse_proxy peercast-0yp:80
+    }
+
+    handle {
+        redir https://{host}{uri} permanent
+    }
+}
+
+{$SITE_DOMAIN} {
+    @yp path {$YP_PATH} {$YP_PATH}/*
+    handle @yp {
+        reverse_proxy peercast-0yp:80
+    }
+
+    handle {
+        root * /srv/www
+        file_server
+    }
+}

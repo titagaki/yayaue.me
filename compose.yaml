@@ -1,0 +1,48 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
+      YP_PATH: /yp
+    volumes:
+      - ./docker/caddy:/etc/caddy:ro
+      - ./public:/srv/www:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - peercast-0yp
+
+  peercast-0yp:
+    build:
+      context: ${PEERCAST_0YP_DIR:-../peercast-0yp}
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "7144:7144"
+    environment:
+      TZ: Asia/Tokyo
+      DB_HOST: host.docker.internal
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER:?Set DB_USER in .env}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      DB_NAME: ${DB_NAME:?Set DB_NAME in .env}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - type: bind
+        source: ${PEERCAST_0YP_DIR:-../peercast-0yp}/peercast-0yp.toml
+        target: /app/peercast-0yp.toml
+        read_only: true
+        bind:
+          create_host_path: false
+
+volumes:
+  caddy_data:
+    name: ${CADDY_DATA_VOLUME:-yayaue-me-caddy-data}
+  caddy_config:
+    name: ${CADDY_CONFIG_VOLUME:-yayaue-me-caddy-config}
