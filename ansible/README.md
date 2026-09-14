@@ -90,7 +90,7 @@ DB 接続、HTTPS ページ表示、HTTP の `/yp/index.txt`、PCP 掲載はデ�
 
 ## peercast-mi の追加
 
-公開先は `https://yayaue.me/mi/`。Compose は mi のソースを別チェックアウトからビルドし、Dockerfile が UI も `/mi/` 用にビルドする。Caddy は `/mi` と `/mi/*` をサイト専用8080へパスを保持して転送する。既存 `/yp` と HTTP `/yp/index.txt` は維持する。
+公開先は `https://yayaue.me/mi/`。番組一覧は0yp・SP・p@YPの3件から取得する。起動時に `-yp` を指定しないため、配信の掲載先は先頭の0yp。Compose は mi のソースを別チェックアウトからビルドし、Dockerfile が UI も `/mi/` 用にビルドする。Caddy は `/mi` と `/mi/*` をサイト専用8080へパスを保持して転送する。既存 `/yp` と HTTP `/yp/index.txt` は維持する。
 
 1. VPS に、サブパス対応と UI 同梱 Dockerfile を含む peercast-mi を `/opt/peercast-mi` に用意する。ソース更新は引き続き手動。
 2. 手元の WSL で `docker/peercast-mi/config.toml` を確認する。公開 origin は `https://yayaue.me`、base_path は `/mi`。開発ログインは無効。サイト8080はコンテナネットワークだけで使用し、管理RPCはCaddyに転送しない。
