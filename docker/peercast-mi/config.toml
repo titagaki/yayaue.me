@@ -1,5 +1,6 @@
 rtmp_port = 1935
 peercast_port = 7154
+public_ipv4 = "153.127.50.98"
 log_level = "info"
 max_relays = 4
 max_relays_total = 16
