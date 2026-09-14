@@ -18,6 +18,7 @@
 - 証明書は旧Caddyのnamed volumeを引き継いでいる。実際のvolume名は `.env` で指定する。警告を消す目的だけでvolumeを新規作成・削除しない。
 - 固定コンテナ名・固定サブネットは未使用。ネットワーク再作成時はホストDB向けUFW許可との整合を確認する。観測したIPを普遍的な既定値として埋め込まない。
 - `peercast-mi` は `/mi`・`/mi/*` をサイト専用8080へパスを保持して転送する。PCPは7154を直接公開。RTMP 1935は直接公開し、発行済みストリームキーで認証する。ユーザー指定によりRTMPS・SSHトンネルは使用しない。
+- サイト管理は `site.admin_x_ids` に指定したX数値IDのみ許可。`/mi/admin/api/1` はサイトの権限・Origin・CSRF検証を経由する。Caddyからノードの `/api/1` を無認証転送しない。
 - miの設定は `docker/peercast-mi/config.toml`、永続データは配置先の `data/peercast-mi`（UID/GID 10001）。配信キー・broadcast_idを上書き・削除しない。
 
 ## Ansibleと運用上の注意

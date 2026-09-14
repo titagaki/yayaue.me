@@ -22,6 +22,7 @@ addr = "pcp://root.p-at.net/"
 channels_url = "https://p-at.net/index.txt"
 
 [site]
+admin_x_ids = ["121039382"]
 enabled = true
 dev_login = false
 listen = "0.0.0.0:8080"
