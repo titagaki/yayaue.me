@@ -2,10 +2,11 @@
 
 現在の本番配置（`/opt`）と移行・運用記録は [docs/production.md](docs/production.md) を参照してください。以下の `/srv` は新規配置の例です。
 
-VPS 共通の Caddy とアプリをこの Compose で管理します。
+VPS 共通の Caddy・0yp・peercast-mi をこの Compose で管理します。
 
 ```text
 /srv/yayaue.me/          compose.yaml, .env, docker/caddy/, public/
+/srv/peercast-mi/        peercast-mi ソース
 /srv/peercast-0yp/       Dockerfile のあるアプリソース、peercast-0yp.toml
 ```
 
@@ -14,6 +15,9 @@ VPS 共通の Caddy とアプリをこの Compose で管理します。
 | 80/TCP `/yp/index.txt` | `peercast-0yp:80` へ転送（HTTP 対応プレイヤー用） |
 | 80/TCP その他 | 同じホスト・URI の HTTPS へ恒久転送 |
 | 443/TCP・UDP `/yp`、`/yp/*` | `peercast-0yp:80` へ転送。パスは削らない |
+| 443/TCP・UDP `/mi`、`/mi/*` | `peercast-mi:8080` へパスを保持して転送 |
+| 7154/TCP | peercast-mi PCP |
+| 127.0.0.1:1945/TCP | peercast-mi RTMP（SSHトンネル用） |
 | 443/TCP・UDP その他 | `public/` の静的ファイル |
 | 7144/TCP | app の 7144 へ直接公開（PCP） |
 | app → ホスト DB | `host.docker.internal:${DB_PORT}` |
@@ -22,9 +26,11 @@ Caddyfile と静的ページは peercast-0yp の既存ファイルを移植し�
 元リポジトリ側のコピーは単独開発用です。アプリの HTTP ポートや DB はホストへ公開しません。
 コンテナ間は Compose のサービス名で接続し、固定コンテナ名・固定サブネットは使いません。
 
+peercast-mi の追加前に [追加手順](ansible/README.md#peercast-mi-の追加) に従ってソース・認証情報・永続ディレクトリを用意します。既存の `.env` に X 認証情報がないまま新しい Compose を適用すると構成検証が失敗します。
+
 ## 初回起動
 
-Linux VPS に Docker Engine と Docker Compose を用意し、上記配置に両リポジトリをチェックアウトします。
+Linux VPS に Docker Engine と Docker Compose を用意し、上記配置に各リポジトリをチェックアウトします。
 `SITE_DOMAIN` の DNS を VPS に向け、80/TCP、443/TCP・UDP、7144/TCP を到達可能にしてください。
 既存環境からの切り替えは、先に次の「既存環境の移行」を確認してください。
 
@@ -53,7 +59,7 @@ localhost のみの待受では接続できません。DB ポートをインタ�
 cd /srv/yayaue.me
 # 秘密情報を表示しない構成検証
 docker compose config -q
-docker compose build peercast-0yp
+docker compose build peercast-0yp peercast-mi
 # 証明書取得は行わず、設定を検証
 docker compose run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 docker compose up -d
@@ -105,12 +111,13 @@ HTTP の `/` が HTTPS へ転送されること、HTTPS の `/` と `/yp/` の�
 以下は `/srv/yayaue.me` で実行します。
 
 ```bash
-# 両リポジトリの変更を取得（ローカル変更がある場合は先に確認）
+# 各リポジトリの変更を取得（ローカル変更がある場合は先に確認）
 git pull --ff-only
 git -C ../peercast-0yp pull --ff-only
+git -C ../peercast-mi pull --ff-only
 # PEERCAST_0YP_DIR を変更した場合は git -C のパスも合わせる
 docker compose config -q
-docker compose build peercast-0yp
+docker compose build peercast-0yp peercast-mi
 docker compose up -d
 
 # Caddy イメージの更新時
@@ -125,7 +132,7 @@ docker compose logs -f --tail=100 caddy peercast-0yp
 docker compose ps
 ```
 
-`.env` の変更は `up -d`、TOML の変更は `restart peercast-0yp` で反映します。
+`.env` の変更は `up -d`、0yp の TOML の変更は `restart peercast-0yp` で反映します。
 `public/` の変更はマウント経由で反映されます。
 Caddy の `/data` と `/config` は named volume に永続化されます。通常の停止に `down -v` やボリューム削除を使わないでください。
 `.env`、秘密鍵、バックアップは Git 管理対象外です。`docker compose config` の通常出力にはパスワードが含まれるため、共有用の検証には `-q` を使います。
@@ -148,7 +155,7 @@ docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile --adapter c
 同じ Compose のデフォルトネットワークで名前解決できるため、追加アプリの HTTP ポートをホストへ公開する必要はありません。
 パス振り分けを使う場合は既存の静的ファイル用 `handle` より前にルートを追加し、アプリがそのパスに対応することを確認してください。
 必要な秘密情報だけを各サービスへ渡し、永続データにはアプリごとの volume を用意します。
-`peercast-mi` は公開方法・ポート・保存先が決まった段階で追加します。現時点では起動対象に含めません。
+`peercast-mi` の設定・導入手順は [Ansible README](ansible/README.md#peercast-mi-の追加) を参照してください。
 
 ## Ansible での配置・更新
 

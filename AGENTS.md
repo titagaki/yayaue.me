@@ -17,12 +17,13 @@
 - 本番DBはホストMariaDB。認証情報は本番の `yayaue.me/.env` からCompose経由で渡す。0ypは環境変数を読み、旧0ypの `.env` は新構成では読み込まない。
 - 証明書は旧Caddyのnamed volumeを引き継いでいる。実際のvolume名は `.env` で指定する。警告を消す目的だけでvolumeを新規作成・削除しない。
 - 固定コンテナ名・固定サブネットは未使用。ネットワーク再作成時はホストDB向けUFW許可との整合を確認する。観測したIPを普遍的な既定値として埋め込まない。
-- `peercast-mi` の追加は未実施。将来用のポートやルートを推測して追加しない。
+- `peercast-mi` は `/mi`・`/mi/*` をサイト専用8080へパスを保持して転送する。PCPは7154を直接公開。RTMP 1945はloopback限定でSSHトンネルを使う。公開RTMPSは未構成。
+- miの設定は `docker/peercast-mi/config.toml`、永続データは配置先の `data/peercast-mi`（UID/GID 10001）。配信キー・broadcast_idを上書き・削除しない。
 
 ## Ansibleと運用上の注意
 
 - `prepare.yml` は手元のファイルを配置し、`deploy.yml` は配置・検証・ビルド・起動・Caddy再読み込みを行う。
-- アプリソースのGit更新、TOML、フロントエンドビルド、OS・Docker導入、DB、UFWは現在のPlaybook管理外。範囲を変更したら運用ドキュメントも更新する。
+- アプリソースのGit更新、0ypのTOML・フロントエンドビルド、OS・Docker導入、DB、UFWは現在のPlaybook管理外。範囲を変更したら運用ドキュメントも更新する。
 - `public/` のファイルを追加・削除する際は `ansible/prepare.yml` のコピー対象と本番の削除方法も確認する。コピーだけでは古いファイルは消えない。
 - Ansibleは手元のファイルを直接コピーする。本番GitのHEADだけでは配信内容を特定できない。
 - `--check` は現在、ファイル変更の予測と読み取りによる前提確認まで。Compose/Caddyの実検証やアプリの健全性確認済みとは報告しない。
@@ -38,7 +39,7 @@
 Compose変更時のローカル構成検証例（起動はしない）:
 
 ```bash
-SITE_DOMAIN=example.test DB_USER=validation DB_PASSWORD=validation-only DB_NAME=validation \
+SITE_DOMAIN=example.test DB_USER=validation DB_PASSWORD=validation-only DB_NAME=validation PEERCAST_X_CLIENT_ID=validation PEERCAST_X_CLIENT_SECRET=validation \
   docker compose --env-file .env.example config -q
 ```
 

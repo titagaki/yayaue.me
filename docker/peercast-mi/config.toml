@@ -1,0 +1,25 @@
+rtmp_port = 1945
+peercast_port = 7154
+log_level = "info"
+max_relays = 4
+max_relays_total = 16
+max_listeners = 20
+channel_cleanup_minutes = 20
+
+[[yp]]
+name = "0yp"
+addr = "pcp://peercast-0yp:7144/"
+channels_url = "https://yayaue.me/yp/index.txt"
+
+[site]
+enabled = true
+dev_login = false
+listen = "0.0.0.0:8080"
+origin = "https://yayaue.me"
+base_path = "/mi"
+ui_dir = "/app/ui/dist"
+# OBS connects through the operator's SSH tunnel; no public plaintext ingest.
+rtmp_url = "rtmp://127.0.0.1:1945/live"
+max_viewers = 20
+max_viewers_per_user = 2
+max_relay_channels = 8

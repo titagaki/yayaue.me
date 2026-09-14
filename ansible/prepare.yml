@@ -23,6 +23,7 @@
         - docker
         - docker/caddy
         - public
+        - data
 
     - name: Copy infrastructure files from this local checkout
       ansible.builtin.copy:
@@ -38,3 +39,21 @@
         - docker/caddy/Caddyfile
         - public/index.html
         - public/favicon.ico
+
+    - name: Create private persistent peercast-mi configuration and state directory
+      ansible.builtin.file:
+        path: "{{ deploy_dir }}/data/peercast-mi"
+        state: directory
+        owner: '10001'
+        group: '10001'
+        mode: '0700'
+
+    - name: Copy peercast-mi configuration while preserving keys and node identity
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../docker/peercast-mi/config.toml"
+        dest: "{{ deploy_dir }}/data/peercast-mi/config.toml"
+        owner: '10001'
+        group: '10001'
+        mode: '0600'
+        backup: true
+      register: peercast_mi_config

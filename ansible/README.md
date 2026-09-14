@@ -8,7 +8,7 @@ Docker/Compose・Python 3・sudo・ホスト mysqld が VPS にあることが�
 Docker Compose は 2.18.0 以降が必要です。
 
 最初の範囲はデプロイに限定しています。OS、Docker のインストール、mysqld、ファイアウォールは管理しません。
-0yp ソースの git 更新、TOML、フロントエンドの事前ビルドも従来どおり管理してください。
+両アプリのソースの git 更新、0yp の TOML・フロントエンドの事前ビルドも従来どおり管理してください。
 実際に VPS にあるソースからビルドするため、デプロイ対象のコミットを事前に確認します。
 
 ## 手元の準備
@@ -61,7 +61,7 @@ CADDY_CONFIG_VOLUME=peercast-0yp_caddy_config
 
 ## 通常の更新
 
-手元のインフラ設定と、VPS 上の0ypソースを目的の版に更新した後で実行します。
+手元のインフラ設定と、VPS 上の両アプリのソースを目的の版に更新した後で実行します。
 
 ```bash
 export ANSIBLE_COLLECTIONS_PATH="$PWD/ansible/collections"
@@ -74,7 +74,7 @@ ansible/.venv/bin/ansible-playbook -i ansible/inventory.yml ansible/deploy.yml -
 実実行では Compose 検証 → アプリビルド → Caddy 検証 → 起動 → 再読み込みの順です。
 ビルドと再読み込みは毎回実行するので、そのタスクは毎回 changed と表示されます。
 Caddy イメージは存在しない場合だけ取得します。イメージ更新は従来の手動手順で明示的に行ってください。
-TOML だけを変更した場合は別途 `sudo docker compose restart peercast-0yp` を配置先で実行します。
+0yp の TOML だけを変更した場合は別途 `sudo docker compose restart peercast-0yp` を配置先で実行します。
 
 設定ファイルの既存内容は Ansible copy の日時付きバックアップに残します。
 配置したファイルは手元の内容で上書きされるため、変更はこのリポジトリで行ってください。
@@ -87,3 +87,28 @@ DB 接続、HTTPS ページ表示、HTTP の `/yp/index.txt`、PCP 掲載はデ�
 失敗時の自動ロールバックはありません。復元する版のソースと設定を用意して再実行します。
 
 利用モジュール: [community.docker.docker_compose_v2](https://docs.ansible.com/projects/ansible/latest/collections/community/docker/docker_compose_v2_module.html)
+
+## peercast-mi の追加
+
+公開先は `https://yayaue.me/mi/`。Compose は mi のソースを別チェックアウトからビルドし、Dockerfile が UI も `/mi/` 用にビルドする。Caddy は `/mi` と `/mi/*` をサイト専用8080へパスを保持して転送する。既存 `/yp` と HTTP `/yp/index.txt` は維持する。
+
+1. VPS に、サブパス対応と UI 同梱 Dockerfile を含む peercast-mi を `/opt/peercast-mi` に用意する。ソース更新は引き続き手動。
+2. 手元の WSL で `docker/peercast-mi/config.toml` を確認する。公開 origin は `https://yayaue.me`、base_path は `/mi`。開発ログインは無効。サイト8080はコンテナネットワークだけで使用し、管理RPCはCaddyに転送しない。
+3. X OAuth アプリに callback `https://yayaue.me/mi/auth/x/callback` を登録する。VPSの `/opt/yayaue.me/.env` に `PEERCAST_MI_DIR=/opt/peercast-mi`、`PEERCAST_X_CLIENT_ID`、`PEERCAST_X_CLIENT_SECRET` を追加する。秘密は手元の管理ファイルへ記入しない。
+4. VPSのファイアウォールで PCP 7154/TCP を到達可能にする（UFWはPlaybook管理外）。RTMP 1945はホストloopback限定。公開RTMPSはまだ用意していない。
+5. 手元の WSL で既存の `deploy.yml --check --diff` を確認し、実デプロイを行う。これが初めてmiを起動する操作になる。`prepare.yml` だけでは起動しない。
+
+`prepare.yml` は `data/peercast-mi` をUID/GID 10001・0700で作り、設定を0600で配置する。miはここに `broadcast_id` と `stream_keys.json` を保存する。設定コピーはこれらを消さない。このディレクトリを再利用すればコンテナ再作成後もノードIDと配信キーを維持する。既存miから移す場合は停止した状態でこれらを移し、所有者・モードを合わせる。セッションはメモリー上のため再起動で失効する。
+
+`deploy.yml` は両アプリをビルドし、miの設定コピーに変更があれば起動後にmiを再起動する。先に `prepare.yml` で設定変更を配置した場合や変更後の再起動に失敗した場合は、VPSの配置先で `sudo docker compose restart peercast-mi` を実行する。再起動中の視聴・配信は切断される。
+
+現在の配信入力はSSHトンネルを使う。手元のWSLで以下を起動し、同じホストのOBSから `rtmp://127.0.0.1:1945/live` とサイトで発行したキーで接続する。
+
+```bash
+# 手元のWSL。SSH接続先は実際のものに置換する。
+ssh -N -L 127.0.0.1:1945:127.0.0.1:1945 debian@<VPSのSSH接続先>
+```
+
+一般利用者向けの公開配信入力には別途RTMPS終端が必要。サイトのHTTPSだけではRTMPを暗号化しない。
+
+デプロイ後は `/mi` → `/mi/`、画面とアセット、Xログイン後の元ページ復帰、視聴・配信、再作成後のキー維持を確認する。既存の `/`・`/yp/`・HTTP `/yp/index.txt` も確認する。ローカル検証は本番適用や実X認証・PCP相互接続の確認を意味しない。

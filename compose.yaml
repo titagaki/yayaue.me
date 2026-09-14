@@ -16,6 +16,7 @@ services:
       - caddy_config:/config
     depends_on:
       - peercast-0yp
+      - peercast-mi
 
   peercast-0yp:
     build:
@@ -38,6 +39,27 @@ services:
         source: ${PEERCAST_0YP_DIR:-../peercast-0yp}/peercast-0yp.toml
         target: /app/peercast-0yp.toml
         read_only: true
+        bind:
+          create_host_path: false
+
+  peercast-mi:
+    build:
+      context: ${PEERCAST_MI_DIR:-../peercast-mi}
+      args:
+        PEERCAST_SITE_BASE_PATH: /mi
+    restart: unless-stopped
+    ports:
+      - "7154:7154"
+      # Ingest via an SSH tunnel until a public RTMPS endpoint is configured.
+      - "127.0.0.1:1945:1945"
+    environment:
+      TZ: Asia/Tokyo
+      PEERCAST_X_CLIENT_ID: ${PEERCAST_X_CLIENT_ID:?Set PEERCAST_X_CLIENT_ID in .env}
+      PEERCAST_X_CLIENT_SECRET: ${PEERCAST_X_CLIENT_SECRET:?Set PEERCAST_X_CLIENT_SECRET in .env}
+    volumes:
+      - type: bind
+        source: ./data/peercast-mi
+        target: /config
         bind:
           create_host_path: false
 

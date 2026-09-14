@@ -10,6 +10,13 @@ http://{$SITE_DOMAIN} {
 }
 
 {$SITE_DOMAIN} {
+    @mi path /mi /mi/*
+    handle @mi {
+        reverse_proxy peercast-mi:8080 {
+            flush_interval -1
+        }
+    }
+
     @yp path {$YP_PATH} {$YP_PATH}/*
     handle @yp {
         reverse_proxy peercast-0yp:80
