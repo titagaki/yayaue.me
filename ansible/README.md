@@ -1,5 +1,7 @@
 # Ansible による配置と更新
 
+本番の実際の設定値・UFW対応・導入結果は [本番構成と運用記録](../docs/production.md) にまとめています。
+
 手元のこのリポジトリから、SSH 経由で VPS へ設定を配置し、Compose のビルド・起動と Caddy の再読み込みを行います。
 `prepare.yml` はファイル配置のみ、`deploy.yml` は配置を含む通常のデプロイです。
 Docker/Compose・Python 3・sudo・ホスト mysqld が VPS にあることが前提です。

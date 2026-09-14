@@ -1,5 +1,7 @@
 # yayaue.me VPS 構成
 
+現在の本番配置（`/opt`）と移行・運用記録は [docs/production.md](docs/production.md) を参照してください。以下の `/srv` は新規配置の例です。
+
 VPS 共通の Caddy とアプリをこの Compose で管理します。
 
 ```text
