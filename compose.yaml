@@ -50,8 +50,8 @@ services:
     restart: unless-stopped
     ports:
       - "7154:7154"
-      # Ingest via an SSH tunnel until a public RTMPS endpoint is configured.
-      - "127.0.0.1:1945:1945"
+      # OBS publishes with an issued stream key.
+      - "1945:1945"
     environment:
       TZ: Asia/Tokyo
       PEERCAST_X_CLIENT_ID: ${PEERCAST_X_CLIENT_ID:?Set PEERCAST_X_CLIENT_ID in .env}

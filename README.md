@@ -17,7 +17,7 @@ VPS 共通の Caddy・0yp・peercast-mi をこの Compose で管理します。
 | 443/TCP・UDP `/yp`、`/yp/*` | `peercast-0yp:80` へ転送。パスは削らない |
 | 443/TCP・UDP `/mi`、`/mi/*` | `peercast-mi:8080` へパスを保持して転送 |
 | 7154/TCP | peercast-mi PCP |
-| 127.0.0.1:1945/TCP | peercast-mi RTMP（SSHトンネル用） |
+| 1945/TCP | peercast-mi RTMP（ストリームキー認証） |
 | 443/TCP・UDP その他 | `public/` の静的ファイル |
 | 7144/TCP | app の 7144 へ直接公開（PCP） |
 | app → ホスト DB | `host.docker.internal:${DB_PORT}` |

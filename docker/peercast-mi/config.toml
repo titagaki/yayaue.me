@@ -18,8 +18,8 @@ listen = "0.0.0.0:8080"
 origin = "https://yayaue.me"
 base_path = "/mi"
 ui_dir = "/app/ui/dist"
-# OBS connects through the operator's SSH tunnel; no public plaintext ingest.
-rtmp_url = "rtmp://127.0.0.1:1945/live"
+# OBS authenticates with the stream key issued by the site.
+rtmp_url = "rtmp://yayaue.me:1945/live"
 max_viewers = 20
 max_viewers_per_user = 2
 max_relay_channels = 8
