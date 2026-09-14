@@ -14,10 +14,12 @@ channels_url = "https://yayaue.me/yp/index.txt"
 [[yp]]
 name = "SP"
 addr = "pcp://bayonet.ddo.jp:7146/"
+channels_url = "http://bayonet.ddo.jp/sp/index.txt"
 
 [[yp]]
 name = "p@YP"
 addr = "pcp://root.p-at.net/"
+channels_url = "https://p-at.net/index.txt"
 
 [site]
 admin_x_ids = ["121039382"]
