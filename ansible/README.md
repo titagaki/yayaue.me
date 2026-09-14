@@ -95,14 +95,14 @@ DB 接続、HTTPS ページ表示、HTTP の `/yp/index.txt`、PCP 掲載はデ�
 1. VPS に、サブパス対応と UI 同梱 Dockerfile を含む peercast-mi を `/opt/peercast-mi` に用意する。ソース更新は引き続き手動。
 2. 手元の WSL で `docker/peercast-mi/config.toml` を確認する。公開 origin は `https://yayaue.me`、base_path は `/mi`。開発ログインは無効。サイト8080はコンテナネットワークだけで使用し、管理RPCはCaddyに転送しない。
 3. X OAuth アプリに callback `https://yayaue.me/mi/auth/x/callback` を登録する。VPSの `/opt/yayaue.me/.env` に `PEERCAST_MI_DIR=/opt/peercast-mi`、`PEERCAST_X_CLIENT_ID`、`PEERCAST_X_CLIENT_SECRET` を追加する。秘密は手元の管理ファイルへ記入しない。
-4. VPSのファイアウォールで PCP 7154/TCP と RTMP 1945/TCP を到達可能にする（UFWはPlaybook管理外）。RTMPは発行済みストリームキーで認証する。
+4. VPSのファイアウォールで PCP 7154/TCP と RTMP 1935/TCP を到達可能にする（UFWはPlaybook管理外）。RTMPは発行済みストリームキーで認証する。
 5. 手元の WSL で既存の `deploy.yml --check --diff` を確認し、実デプロイを行う。これが初めてmiを起動する操作になる。`prepare.yml` だけでは起動しない。
 
 `prepare.yml` は `data/peercast-mi` をUID/GID 10001・0700で作り、設定を0600で配置する。miはここに `broadcast_id` と `stream_keys.json` を保存する。設定コピーはこれらを消さない。このディレクトリを再利用すればコンテナ再作成後もノードIDと配信キーを維持する。既存miから移す場合は停止した状態でこれらを移し、所有者・モードを合わせる。セッションはメモリー上のため再起動で失効する。
 
 `deploy.yml` は両アプリをビルドし、miの設定コピーに変更があれば起動後にmiを再起動する。先に `prepare.yml` で設定変更を配置した場合や変更後の再起動に失敗した場合は、VPSの配置先で `sudo docker compose restart peercast-mi` を実行する。再起動中の視聴・配信は切断される。
 
-OBS のサービスは「カスタム」、サーバーは `rtmp://yayaue.me:1945/live`、ストリームキーはサイトの配信ページで発行した値を設定する。サイトで配信枠を作成してからOBSの配信を開始する。未発行のキーによるPublishは拒否される。
+OBS のサービスは「カスタム」、サーバーは `rtmp://yayaue.me/live`、ストリームキーはサイトの配信ページで発行した値を設定する。サイトで配信枠を作成してからOBSの配信を開始する。未発行のキーによるPublishは拒否される。
 
 ユーザー指定により公開RTMPを採用し、RTMPS終端・SSHトンネルは使用しない。RTMP接続にはTLS暗号化はない。サイトのHTTPSとX認証は維持する。
 

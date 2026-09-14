@@ -17,7 +17,7 @@
 - 本番DBはホストMariaDB。認証情報は本番の `yayaue.me/.env` からCompose経由で渡す。0ypは環境変数を読み、旧0ypの `.env` は新構成では読み込まない。
 - 証明書は旧Caddyのnamed volumeを引き継いでいる。実際のvolume名は `.env` で指定する。警告を消す目的だけでvolumeを新規作成・削除しない。
 - 固定コンテナ名・固定サブネットは未使用。ネットワーク再作成時はホストDB向けUFW許可との整合を確認する。観測したIPを普遍的な既定値として埋め込まない。
-- `peercast-mi` は `/mi`・`/mi/*` をサイト専用8080へパスを保持して転送する。PCPは7154を直接公開。RTMP 1945は直接公開し、発行済みストリームキーで認証する。ユーザー指定によりRTMPS・SSHトンネルは使用しない。
+- `peercast-mi` は `/mi`・`/mi/*` をサイト専用8080へパスを保持して転送する。PCPは7154を直接公開。RTMP 1935は直接公開し、発行済みストリームキーで認証する。ユーザー指定によりRTMPS・SSHトンネルは使用しない。
 - miの設定は `docker/peercast-mi/config.toml`、永続データは配置先の `data/peercast-mi`（UID/GID 10001）。配信キー・broadcast_idを上書き・削除しない。
 
 ## Ansibleと運用上の注意
