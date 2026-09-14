@@ -147,3 +147,9 @@ docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile --adapter c
 パス振り分けを使う場合は既存の静的ファイル用 `handle` より前にルートを追加し、アプリがそのパスに対応することを確認してください。
 必要な秘密情報だけを各サービスへ渡し、永続データにはアプリごとの volume を用意します。
 `peercast-mi` は公開方法・ポート・保存先が決まった段階で追加します。現時点では起動対象に含めません。
+
+## Ansible での配置・更新
+
+小さなデプロイ用 Playbook を [ansible/](ansible/README.md) に用意しています。
+初回の手動移行が完了した後、設定配置・ビルド・起動・Caddy 再読み込みを自動化できます。
+本番で確認した既存0ypの配置先 `/opt/peercast-0yp` を維持する例も記載しています。

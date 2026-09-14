@@ -1,0 +1,10 @@
+all:
+  children:
+    vps:
+      hosts:
+        production:
+          ansible_host: YOUR_VPS_HOST_OR_IP
+          ansible_user: debian
+      vars:
+        # Keep this path stable: it also determines the Compose project name.
+        deploy_dir: /opt/yayaue.me

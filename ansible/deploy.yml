@@ -1,0 +1,135 @@
+---
+- name: Check prerequisites before changing deployed files
+  hosts: vps
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Verify Docker Compose is available
+      ansible.builtin.command:
+        argv: [docker, compose, version, --short]
+      changed_when: false
+      check_mode: false
+
+    - name: Look for running legacy containers
+      ansible.builtin.command:
+        argv:
+          - docker
+          - ps
+          - --filter
+          - name=^/peercast-0yp(-caddy)?$
+          - --format
+          - '{{ "{{.Names}}" }}'
+      register: legacy_containers
+      changed_when: false
+      check_mode: false
+
+    - name: Require completion of the manual legacy cutover
+      ansible.builtin.assert:
+        that: legacy_containers.stdout | trim == ''
+        fail_msg: >-
+          Legacy 0yp containers are still running. Follow README.md to stop the old
+          Compose without -v and retain its certificate volumes before deploying.
+
+    - name: Check the manually managed production environment file
+      ansible.builtin.stat:
+        path: "{{ deploy_dir }}/.env"
+      register: production_env
+
+    - name: Require production environment configuration
+      ansible.builtin.assert:
+        that:
+          - production_env.stat.exists
+          - production_env.stat.isreg | default(false)
+        fail_msg: Run prepare.yml, then create the production .env on the VPS first.
+
+- name: Place configuration
+  ansible.builtin.import_playbook: prepare.yml
+
+- name: Validate and deploy the Compose project
+  hosts: vps
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Restrict environment file permissions
+      ansible.builtin.file:
+        path: "{{ deploy_dir }}/.env"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Explain check mode limits
+      ansible.builtin.debug:
+        msg: Check mode previews file changes only; build, validation and startup are skipped.
+      when: ansible_check_mode
+
+    - name: Apply deployment
+      when: not ansible_check_mode
+      block:
+        - name: Validate Compose without printing credentials
+          ansible.builtin.command:
+            argv: [docker, compose, -f, compose.yaml, config, --quiet]
+            chdir: "{{ deploy_dir }}"
+          changed_when: false
+          no_log: true
+
+        - name: Build the existing application checkout before startup
+          ansible.builtin.command:
+            argv: [docker, compose, -f, compose.yaml, build, peercast-0yp]
+            chdir: "{{ deploy_dir }}"
+          changed_when: true
+          no_log: true
+
+        - name: Validate Caddy before applying the stack
+          ansible.builtin.command:
+            argv:
+              - docker
+              - compose
+              - -f
+              - compose.yaml
+              - run
+              - --rm
+              - --no-deps
+              - caddy
+              - caddy
+              - validate
+              - --config
+              - /etc/caddy/Caddyfile
+              - --adapter
+              - caddyfile
+            chdir: "{{ deploy_dir }}"
+          changed_when: false
+          no_log: true
+
+        - name: Start the shared stack and wait for running containers
+          community.docker.docker_compose_v2:
+            project_src: "{{ deploy_dir }}"
+            files: [compose.yaml]
+            state: present
+            build: never
+            pull: missing
+            remove_orphans: false
+            remove_volumes: false
+            wait: true
+            wait_timeout: 60
+          no_log: true
+
+        # Always reload, including retries after a previous interrupted deployment.
+        - name: Reload Caddy configuration
+          ansible.builtin.command:
+            argv:
+              - docker
+              - compose
+              - -f
+              - compose.yaml
+              - exec
+              - -T
+              - caddy
+              - caddy
+              - reload
+              - --config
+              - /etc/caddy/Caddyfile
+              - --adapter
+              - caddyfile
+            chdir: "{{ deploy_dir }}"
+          changed_when: true
+          no_log: true

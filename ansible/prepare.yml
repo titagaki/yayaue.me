@@ -1,0 +1,40 @@
+---
+- name: Place shared VPS configuration
+  hosts: vps
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Require an absolute deployment path
+      ansible.builtin.assert:
+        that:
+          - deploy_dir is defined
+          - deploy_dir is match('^/.+')
+          - deploy_dir != '/'
+
+    - name: Create deployment directories
+      ansible.builtin.file:
+        path: "{{ deploy_dir }}/{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      loop:
+        - ''
+        - docker
+        - docker/caddy
+        - public
+
+    - name: Copy infrastructure files from this local checkout
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../{{ item }}"
+        dest: "{{ deploy_dir }}/{{ item }}"
+        owner: root
+        group: root
+        mode: '0644'
+        backup: true
+      loop:
+        - compose.yaml
+        - .env.example
+        - docker/caddy/Caddyfile
+        - public/index.html
+        - public/favicon.ico

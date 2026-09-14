@@ -4,3 +4,7 @@
 *.pem
 *.key
 /backups/
+/ansible/inventory.yml
+/ansible/.venv/
+/ansible/collections/
+/ansible/*.retry
