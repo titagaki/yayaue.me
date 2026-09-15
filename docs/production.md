@@ -238,3 +238,12 @@ UFWのサブネット許可、DB、バックアップはAnsible管理外。
 公開IPv4対応・本番設定更新の案内後、ユーザーが「配信できました」と確認した。セッション前半でもXログイン、サイト視聴、管理パネルのチャンネル・ストリームキー・ノード情報読み込み成功を報告済み。上記の各時点の未確認記述は当時の履歴として残す。
 
 最終VPSのGit HEAD・Ansible出力はこの時点では提示されていない。修正後のtracker IPの独立再取得や他PeerCastノードからの再生まで確認済みとはしない。アプリとインフラの変更はpush済み。公開IP直書き運用をユーザー了承、VPS移転時にpublic_ipv4も更新する。miの最新引き継ぎはdocs/handoffs/2026-09-14-production.md。
+
+
+## 2026-09-15 配信者IPのトラック情報への記録（ローカル変更）
+
+mi のチャンネル作成時、HTTPの元IPを `track.creator` に `IP via PecaMI` として設定する。`docker/peercast-mi/config.toml` の `site.trusted_proxies` にRFC1918の範囲を指定し、Compose内のCaddyから受け取るX-Forwarded-Forを利用する。固定コンテナIP・固定サブネットには依存しない。この指定は内部ネットワーク全体を信頼するため、8080の非公開を維持し、他の信頼できないコンテナを同じネットワークに参加させない。
+
+Caddy設定は変更しない。[公式のヘッダー既定動作](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#defaults)は外部からのX-Forwarded-Forを無視し、元IPを設定する。miはソケット接続元から右から左に辿り、最初の非信頼IPを採用する。RTMPソケットではなくブラウザーからの作成要求のIPであり、PCP/YPの公開トラック情報に含まれる。
+
+本番への適用・公開YP上の値は未確認。VPS側のmiソース更新後、手元WSLから通常のAnsible deployを行い、アプリと設定を同時反映する。
