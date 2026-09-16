@@ -38,3 +38,9 @@ rtmp_url = "rtmp://yayaue.me/live"
 max_viewers = 20
 max_viewers_per_user = 2
 max_relay_channels = 8
+
+[audit]
+enabled = true
+node_id = "mi-production"
+spool_dir = "/config/site-data/audit"
+retention_days = 90

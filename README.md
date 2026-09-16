@@ -162,3 +162,5 @@ docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile --adapter c
 小さなデプロイ用 Playbook を [ansible/](ansible/README.md) に用意しています。
 初回の手動移行が完了した後、設定配置・ビルド・起動・Caddy 再読み込みを自動化できます。
 本番で確認した既存0ypの配置先 `/opt/peercast-0yp` を維持する例も記載しています。
+
+miのログイン・配信記録の初回DB準備とmigrationは [監査ログ導入](docs/mi-audit.md) を参照。

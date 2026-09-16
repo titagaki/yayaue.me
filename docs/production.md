@@ -247,3 +247,7 @@ mi のチャンネル作成時、HTTPの元IPを `track.creator` に `IP via Pec
 Caddy設定は変更しない。[公式のヘッダー既定動作](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#defaults)は外部からのX-Forwarded-Forを無視し、元IPを設定する。miはソケット接続元から右から左に辿り、最初の非信頼IPを採用する。RTMPソケットではなくブラウザーからの作成要求のIPであり、PCP/YPの公開トラック情報に含まれる。
 
 本番への適用・公開YP上の値は未確認。VPS側のmiソース更新後、手元WSLから通常のAnsible deployを行い、アプリと設定を同時反映する。
+
+## 2026-09-16: mi監査ログのローカル導入準備
+
+Composeにmi専用DB環境変数とhost-gateway、TOMLにaudit設定を追加。資格情報未設定・DB未準備時は既存miボリュームに退避する。[DB準備・明示migration手順](mi-audit.md)を追加した。本番DB・UFW・起動構成はこの作業では変更していない。

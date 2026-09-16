@@ -56,6 +56,13 @@ services:
       TZ: Asia/Tokyo
       PEERCAST_X_CLIENT_ID: ${PEERCAST_X_CLIENT_ID:?Set PEERCAST_X_CLIENT_ID in .env}
       PEERCAST_X_CLIENT_SECRET: ${PEERCAST_X_CLIENT_SECRET:?Set PEERCAST_X_CLIENT_SECRET in .env}
+      PEERCAST_AUDIT_DB_HOST: host.docker.internal
+      PEERCAST_AUDIT_DB_PORT: ${PEERCAST_AUDIT_DB_PORT:-3306}
+      PEERCAST_AUDIT_DB_NAME: ${PEERCAST_AUDIT_DB_NAME:-peercast_mi}
+      PEERCAST_AUDIT_DB_USER: ${PEERCAST_AUDIT_DB_USER:-}
+      PEERCAST_AUDIT_DB_PASSWORD: ${PEERCAST_AUDIT_DB_PASSWORD:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - type: bind
         source: ./data/peercast-mi
