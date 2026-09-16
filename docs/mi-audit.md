@@ -59,7 +59,7 @@ DB管理者は `audit_events` のauth.loginとbroadcasts / broadcast_inputsをSQ
 - DB断ではスプール、メモリー・ディスク上限では欠落を通常ログへ出す。`.bad`の隔離ファイルは管理者が原因を確認して保存・除去する。
 - DBと `data/peercast-mi/site-data/audit` をそれぞれバックアップする。キーや既存データを上書きしない。
 - 記録を止める場合は手元のTOMLのaudit.enabledをfalseにして通常配置・再起動する。既存DBやスプールを削除する必要はない。
-- 管理画面の履歴検索は未実装。状態APIとSQL参照が初期導入の範囲。
+- X管理者は `/mi/admin` の「ログ」で操作ログ・配信履歴・RTMP受信区間を検索できる。初期表示は過去7日、条件をクリアすれば古い記録も対象になる。一般アカウントには公開しない。履歴画面の導入に追加のDBマイグレーションは不要（アプリの更新・再ビルドは必要）。
 - 実装仕様はpeercast-miの `docs/spec/audit.md`、検証は `docs/reviews/2026-09-16-audit-implementation.md`。
 
 保持期限変更: 新版のpeercast-miはretention_days=0でDBの自動削除・再送時の期限切れ破棄を行わない。旧版の0は90日なので、TOMLだけでなくアプリも更新する。テーブルの再migrationは不要。
