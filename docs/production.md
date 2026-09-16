@@ -251,3 +251,9 @@ Caddy設定は変更しない。[公式のヘッダー既定動作](https://cadd
 ## 2026-09-16: mi監査ログのローカル導入準備
 
 Composeにmi専用DB環境変数とhost-gateway、TOMLにaudit設定を追加。資格情報未設定・DB未準備時は既存miボリュームに退避する。[DB準備・明示migration手順](mi-audit.md)を追加した。本番DB・UFW・起動構成はこの作業では変更していない。
+
+## mi監査記録の本番確認と保持期間の変更
+
+ユーザーのVPS出力でMariaDB 10.11.16-MariaDB-deb12、migration成功、記録状態enabled=true/degraded=false・滞留/欠落0を確認。配信「いまいch」のfirst_media_atとended_at、encoder_disconnectによる終了がDBへ保存された。
+
+続いてユーザーが自動削除しないよう指定したため、本番用TOMLをretention_days=0へ変更。0を無期限と解釈する新版アプリと一緒に配置する必要がある。無期限設定の本番適用はまだ未確認。

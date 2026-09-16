@@ -1,10 +1,10 @@
 # peercast-miのログイン・配信記録
 
-2026-09-16にローカル設定・手順を追加。本番のDB作成・migration・デプロイは未実施。
+2026-09-16にローカル設定・手順を追加。その後ユーザーの実行結果で本番migration・起動・配信履歴保存を確認。無期限保存への変更はアプリ更新と設定再配置が必要。
 
 miの監査ログは既存ホストMariaDBに独立した `peercast_mi` DBを作成して保存する。0ypのDB・ユーザー・時刻設定は流用しない。配信キーとフォーム設定のJSONは従来どおり。
 
-Composeは `host.docker.internal` と専用の `PEERCAST_AUDIT_DB_*` 環境変数を渡す。設定は有効、90日保持。資格情報・スキーマがまだなければ `/config/site-data/audit` にJSONLを退避し、サイトと配信は継続する。容量上限512MiBを超えると新しいログが失われるため、DB準備前のまま放置しない。
+Composeは `host.docker.internal` と専用の `PEERCAST_AUDIT_DB_*` 環境変数を渡す。設定は有効、無期限保存（retention_days=0）。資格情報・スキーマがまだなければ `/config/site-data/audit` にJSONLを退避し、サイトと配信は継続する。容量上限512MiBを超えると新しいログが失われるため、DB準備前のまま放置しない。
 
 ## 導入順序
 
@@ -61,3 +61,5 @@ DB管理者は `audit_events` のauth.loginとbroadcasts / broadcast_inputsをSQ
 - 記録を止める場合は手元のTOMLのaudit.enabledをfalseにして通常配置・再起動する。既存DBやスプールを削除する必要はない。
 - 管理画面の履歴検索は未実装。状態APIとSQL参照が初期導入の範囲。
 - 実装仕様はpeercast-miの `docs/spec/audit.md`、検証は `docs/reviews/2026-09-16-audit-implementation.md`。
+
+保持期限変更: 新版のpeercast-miはretention_days=0でDBの自動削除・再送時の期限切れ破棄を行わない。旧版の0は90日なので、TOMLだけでなくアプリも更新する。テーブルの再migrationは不要。

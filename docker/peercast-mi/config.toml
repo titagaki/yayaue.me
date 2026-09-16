@@ -43,4 +43,4 @@ max_relay_channels = 8
 enabled = true
 node_id = "mi-production"
 spool_dir = "/config/site-data/audit"
-retention_days = 90
+retention_days = 0 # 無期限。自動削除しない。
