@@ -19,8 +19,8 @@
     }
     .site { text-align: center; }
     .domain { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.02em; }
-    .desc { margin-top: 0.5rem; font-size: 0.85rem; color: #888; }
-    .links { margin-top: 1.5rem; display: flex; gap: 1.5rem; justify-content: center; }
+    .desc { margin-bottom: 0.5rem; font-size: 0.85rem; color: #888; }
+    .links { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; align-items: center; }
     a { color: #888; text-decoration: none; font-size: 0.9rem; }
     a:hover { color: #111; }
     footer { margin-top: 3rem; font-size: 0.75rem; color: #bbb; }
@@ -31,9 +31,11 @@
 <body>
   <div class="site">
     <p class="domain">yayaue.me</p>
-    <p class="desc">PeerCast YP（Yellow Page）</p>
     <div class="links">
-      <a href="/yp/">令和のYP 0yp</a>
+      <div>
+        <p class="desc">PeerCast YP（Yellow Page）</p>
+        <a href="/yp/">令和のYP 0yp</a>
+      </div>
       <a href="/mi/">PecaMI</a>
     </div>
   </div>
